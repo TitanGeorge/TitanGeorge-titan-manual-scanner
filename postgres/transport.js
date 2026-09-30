@@ -15,8 +15,10 @@ class CookieJar{
 }
 function getSetCookies(headers){if(typeof headers.getSetCookie==='function')return headers.getSetCookie();const v=headers.get('set-cookie');return v?[v]:[]}
 async function request(jar,url,opts={}){
+ const destination=new URL(url);if(![LOGIN,DASH,MANUALS,AJAX].includes(destination.href))throw new Error('Metadata request URL blocked');
+ const delay=Number(process.env.TITAN_SOURCE_DELAY_MS||1000);if(!Number.isSafeInteger(delay)||delay<1000||delay>60000)throw new Error('Invalid metadata request delay');await new Promise(resolve=>setTimeout(resolve,delay));
  const headers=new Headers(opts.headers||{});headers.set('user-agent',UA);headers.set('accept','text/html,application/json;q=0.9,*/*;q=0.8');const c=jar.header();if(c)headers.set('cookie',c);
- const r=await fetch(url,{...opts,headers,redirect:'manual'});jar.add(r.headers);return r;
+ const r=await fetch(url,{signal:AbortSignal.timeout(15000),...opts,headers,redirect:'manual'});jar.add(r.headers);return r;
 }
 async function follow(jar,r,max=8){let cur=r;for(let i=0;i<max&&cur.status>=300&&cur.status<400;i++){const loc=cur.headers.get('location');if(!loc)break;cur=await request(jar,new URL(loc,cur.url).href,{method:'GET'})}return cur}
 function extractNonce(html){

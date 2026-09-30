@@ -13,5 +13,9 @@ export async function initializeFresh(db,{scanId=randomUUID(),root,allowParallel
 }
 export async function setPaused(db,scanId,paused){
  if(typeof paused!=='boolean')throw new Error('Explicit pause boolean required');
- return transaction(db,async()=>{await db.query('SELECT pg_advisory_xact_lock(741926)');const r=await db.query("UPDATE scan_runs SET crawling_enabled=$2,status=CASE WHEN $2 THEN 'running' ELSE 'paused' END,updated_at=now() WHERE id=$1 AND status NOT IN ('completed','cancelled') RETURNING id",[scanId,!paused]);if(!r.rows.length)throw new Error('Scan missing or terminal');});
+ return transaction(db,async()=>{await db.query('SELECT pg_advisory_xact_lock(741926)');if(!paused)await db.query('UPDATE scan_runs SET page_budget=NULL WHERE id=$1',[scanId]);const r=await db.query("UPDATE scan_runs SET crawling_enabled=$2,status=CASE WHEN $2 THEN 'running' ELSE 'paused' END,updated_at=now() WHERE id=$1 AND status NOT IN ('completed','cancelled') RETURNING id",[scanId,!paused]);if(!r.rows.length)throw new Error('Scan missing or terminal');});
+}
+
+export async function enableValidation(db,scanId){
+ return transaction(db,async()=>{await db.query('SELECT pg_advisory_xact_lock(741926)');const r=await db.query("UPDATE scan_runs SET page_budget=1+(SELECT count(*) FROM processed_pages p JOIN crawl_jobs j ON j.id=p.job_id WHERE j.scan_id=$1),max_concurrency=1,crawling_enabled=true,status='running',updated_at=now() WHERE id=$1 AND NOT crawling_enabled AND status NOT IN ('completed','cancelled') AND NOT EXISTS(SELECT 1 FROM crawl_jobs WHERE scan_id=$1 AND status='processing' AND lease_expires_at>clock_timestamp()) RETURNING id",[scanId]);if(!r.rows.length)throw new Error('Scan missing or terminal');});
 }

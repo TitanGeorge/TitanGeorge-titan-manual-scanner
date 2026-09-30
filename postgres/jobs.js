@@ -9,6 +9,7 @@ export async function claimJob(db,scanId,owner,seconds=60){
   await db.query(`UPDATE folders SET crawl_status='failed',updated_at=now() WHERE id IN (SELECT folder_id FROM crawl_jobs WHERE scan_id=$1 AND attempts >= $2 AND status='processing' AND lease_expires_at<=now())`,[scanId,r.max_attempts]);
   await db.query("UPDATE crawl_jobs SET status='blocked',lease_owner=NULL,lease_expires_at=NULL,last_error='{\"code\":\"retry_exhausted\"}',updated_at=now() WHERE scan_id=$1 AND attempts >= $2 AND status='processing' AND lease_expires_at<=now()",[scanId,r.max_attempts]);
   if((await db.query('SELECT next_request_at>clock_timestamp() AS delayed FROM scan_runs WHERE id=$1',[scanId])).rows[0].delayed)return null;
+  if(r.page_budget!==null&&Number((await db.query("SELECT count(*) FROM crawl_jobs WHERE scan_id=$1 AND (status='completed' OR (status='processing' AND lease_expires_at>clock_timestamp()))",[scanId])).rows[0].count)>=Number(r.page_budget))return null;
   if(Number((await db.query("SELECT count(*) FROM crawl_jobs WHERE scan_id=$1 AND status='processing' AND lease_expires_at>clock_timestamp()",[scanId])).rows[0].count)>=r.max_concurrency)return null;
   const job=(await db.query(`SELECT j.* FROM crawl_jobs j JOIN folders f ON f.id=j.folder_id
    WHERE j.scan_id=$1 AND f.crawl_status<>'completed' AND f.next_page=j.page AND
@@ -71,6 +72,7 @@ export async function processPage(db,lease,{files,nextPage=null}){
   // Check the original lease again immediately before commit, using DB wall clock.
   if(!(await db.query('SELECT $1::timestamptz>clock_timestamp() AS valid',[job.lease_expires_at])).rows[0].valid)throw new Error('Lease expired before page commit');
   await db.query(`UPDATE scan_runs SET updated_at=now(),status=CASE WHEN EXISTS(SELECT 1 FROM crawl_jobs WHERE scan_id=$1 AND status<>'completed') THEN CASE WHEN crawling_enabled THEN 'running' ELSE 'paused' END ELSE 'completed' END WHERE id=$1`,[job.scan_id]);
+  if((await db.query('SELECT page_budget FROM scan_runs WHERE id=$1',[job.scan_id])).rows[0].page_budget!==null)await db.query("UPDATE scan_runs SET crawling_enabled=false,status=CASE WHEN status='completed' THEN status ELSE 'paused' END WHERE id=$1 AND page_budget<=(SELECT count(*) FROM processed_pages p JOIN crawl_jobs j ON j.id=p.job_id WHERE j.scan_id=$1)",[job.scan_id]);
   return {alreadyCommitted:false};
  });
 }
