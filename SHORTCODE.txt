@@ -1,0 +1,1 @@
+Service Alliance shortcode 7 metadata endpoint only.
