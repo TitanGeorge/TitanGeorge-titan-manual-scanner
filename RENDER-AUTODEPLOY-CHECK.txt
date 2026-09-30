@@ -1,0 +1,1 @@
+Render auto-deploy verification marker. Current main includes the metadata-only auth test. No secrets or PDF data are included.
