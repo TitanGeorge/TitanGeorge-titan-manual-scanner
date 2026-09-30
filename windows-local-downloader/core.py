@@ -27,6 +27,9 @@ class SafeError(Exception):
 class AuthExpired(SafeError):
     def __init__(self): super().__init__('AUTH_EXPIRED_REAUTHENTICATE')
 
+class RatePaused(SafeError):
+    def __init__(self,http=429): super().__init__('RATE_LIMIT_PAUSED',http)
+
 class DiskLow(SafeError):
     def __init__(self): super().__init__('DISK_SPACE_PAUSED')
 
@@ -148,7 +151,7 @@ class Catalog:
         sums = self.db.execute("SELECT COALESCE(sum(CASE WHEN status='verified' THEN actual_size ELSE 0 END),0),COALESCE(sum(CASE WHEN status!='verified' THEN expected_size ELSE 0 END),0),sum(CASE WHEN expected_size IS NULL THEN 1 ELSE 0 END),max(finished) FROM manuals").fetchone()
         folder = self.db.execute("SELECT source_path,page,status FROM folders WHERE status!='done' ORDER BY rowid LIMIT 1").fetchone()
         return {'discovered': total, 'pending': counts.get('pending',0), 'downloading': counts.get('downloading',0),
-                'verified': counts.get('verified',0), 'failed': counts.get('failed',0), 'needing_retry': counts.get('failed',0),
+                'verified': counts.get('verified',0), 'needs_review': counts.get('needs_review',0), 'failed': counts.get('failed',0), 'needing_retry': counts.get('failed',0),
                 'duplicate_references': refs-total,'verified_bytes':sums[0],'known_remaining_bytes':sums[1],
                 'missing_sizes':sums[2] or 0,'last_success':sums[3],'folder_progress':dict(folder) if folder else None,
                 'failed_folders':self.db.execute("SELECT count(*) FROM folders WHERE status='failed'").fetchone()[0],
@@ -190,6 +193,11 @@ def verify(path, expected=None):
 
 def quarantine(cat, path, key):
     if path.exists():
+        # HTML/login bodies may contain session material; never retain them.
+        with path.open('rb') as probe:
+            is_pdf = probe.read(5) == b'%PDF-'
+        if not is_pdf:
+            path.unlink(); return
         dest = cat.state / 'quarantine' / (hashlib.sha256(key.encode()).hexdigest() + '-' + str(time.time_ns()) + '.rejected')
         path.rename(dest)
 
@@ -205,6 +213,13 @@ def finalize(cat, row, part, info, http=None):
     cat.mark_success(row['key'],info,http)
 
 def recover(cat):
+    for row in cat.db.execute("SELECT * FROM manuals WHERE status='verified'").fetchall():
+        try:
+            info=verify(Path(row['local_path']),row['expected_size'])
+            if info[1]!=row['sha256']: raise SafeError('VERIFIED_FILE_CHANGED')
+        except SafeError:
+            with cat.db: cat.db.execute("UPDATE manuals SET status='needs_review',verification='local_file_missing_or_changed',last_error='VERIFIED_FILE_NEEDS_REVIEW' WHERE key=?",(row['key'],))
+            cat.event('VERIFIED_FILE_NEEDS_REVIEW',row['key'])
     for row in cat.db.execute("SELECT m.* FROM manuals m JOIN budget b ON m.key=b.file_key WHERE b.state='reserved'").fetchall():
         final = Path(row['local_path']); part = Path(str(final)+'.part')
         try:
@@ -233,7 +248,7 @@ class Pacer:
 
 def retry_wait(error, attempt, sleep=time.sleep):
     # Long server Retry-After pauses this run instead of hammering or ignoring the value.
-    if error.retry_after > 300: raise SafeError('RATE_LIMIT_PAUSED',error.http)
+    if error.retry_after > 300: raise RatePaused(error.http)
     sleep(max(error.retry_after, min(60,2**attempt+random.uniform(0,1))))
 
 def download(cat, row, transport, threshold, retries=3, pacer=None, sleep=time.sleep, stop=None):
@@ -250,6 +265,7 @@ def download(cat, row, transport, threshold, retries=3, pacer=None, sleep=time.s
                 if pacer: pacer.wait()
                 with cat.db: cat.db.execute('UPDATE manuals SET attempts=attempts+1 WHERE key=?',(row['key'],))
                 response=transport.download(row)
+                with cat.db: cat.db.execute('UPDATE manuals SET http_status=? WHERE key=?',(response.status_code,row['key']))
                 mime=response.headers.get('Content-Type','').split(';')[0].lower()
                 if mime in ('text/html','application/xhtml+xml'): raise SafeError('HTML_RESPONSE_REJECTED',response.status_code)
                 if mime and mime not in ('application/pdf','application/octet-stream','binary/octet-stream','application/download','application/x-download'):
@@ -257,27 +273,39 @@ def download(cat, row, transport, threshold, retries=3, pacer=None, sleep=time.s
                 length=size_of(response.headers.get('Content-Length')) if not response.headers.get('Content-Encoding') else None
                 disk_check(cat.root,threshold,max(row['expected_size'] or 0,length or 0))
                 with part.open('wb') as f:
+                    prefix = b''
+                    prefix_checked = False
                     for chunk in response.iter_content(1024*1024):
                         if stop is not None and stop.is_set(): raise SafeError('RUN_PAUSED')
                         if not chunk: continue
+                        if not prefix_checked:
+                            prefix += chunk
+                            if len(prefix) < 5: continue
+                            head = prefix[:4096].lower()
+                            if re.search(br'name=["\']pwd["\']|wp-login|mepr-login|unauthorized-access',head): raise AuthExpired()
+                            if not prefix.startswith(b'%PDF-'): raise SafeError('NON_PDF_RESPONSE')
+                            chunk=prefix; prefix=b''; prefix_checked=True
                         disk_check(cat.root,threshold,len(chunk)); f.write(chunk)
                     f.flush(); os.fsync(f.fileno())
+                actual=part.stat().st_size
+                with cat.db: cat.db.execute('UPDATE manuals SET actual_size=?,signature_ok=? WHERE key=?',(actual,int(prefix_checked),row['key']))
                 if length is not None and part.stat().st_size!=length: raise SafeError('TRUNCATED_HTTP_BODY')
                 info=verify(part,row['expected_size'])
                 finalize(cat,row,part,info,response.status_code)
                 return True
-            except (AuthExpired,DiskLow): raise
+            except (AuthExpired,DiskLow,RatePaused): raise
             except SafeError as error:
                 quarantine(cat,part,row['key'])
                 if error.code not in ('TRANSIENT_HTTP','NETWORK_INTERRUPTED') or attempt+1 >= retries: raise
+                cat.event('RETRY_TRANSIENT_REQUEST',row['key'],error.http)
                 retry_wait(error,attempt,sleep)
             except OSError: raise SafeError('LOCAL_IO_FAILURE') from None
             finally:
                 if response is not None: response.close()
         return False
-    except (AuthExpired,DiskLow) as error:
+    except (AuthExpired,DiskLow,RatePaused) as error:
         quarantine(cat,part,row['key']); cat.release(row['key'],error.code,error.http)
         if stop is not None: stop.set()
         raise
     except SafeError as error:
-        quarantine(cat,part,row['key']); cat.release(row['key'],error.code,error.http); return False
+        quarantine(cat,part,row['key']); cat.release(row['key'],error.code,error.http,signature=cat.db.execute('SELECT signature_ok FROM manuals WHERE key=?',(row['key'],)).fetchone()[0]); return False

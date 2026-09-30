@@ -1,7 +1,7 @@
 """Checkpoint each page and returned parent/child objects together."""
 from contextlib import nullcontext
 import json
-from core import SafeError, AuthExpired, clean_object, effective_mime, now, retry_wait
+from core import SafeError, AuthExpired, RatePaused, clean_object, effective_mime, identity, now, retry_wait
 from service import ROOT
 
 
@@ -18,7 +18,7 @@ def next_page(cat,service,pacer,retries=3,exclude=()):
         for attempt in range(retries):
             pacer.wait()
             try: return service.listing(folder,limit)
-            except AuthExpired: raise
+            except (AuthExpired,RatePaused): raise
             except SafeError as error:
                 if error.code not in ('TRANSIENT_HTTP','NETWORK_INTERRUPTED') or attempt+1>=retries: raise
                 retry_wait(error,attempt)
@@ -37,18 +37,22 @@ def next_page(cat,service,pacer,retries=3,exclude=()):
         # Single page transaction; crash before commit leaves original page eligible.
         with cat.db:
             cat.db.execute('INSERT INTO folder_pages VALUES(?,?)',(job['key'],job['page']))
+            fresh = 0
             for file in data['files']:
                 if not isinstance(file,dict): raise SafeError('METADATA_INVALID_FILE')
                 if not file.get('accountId'): file={**file,'accountId':folder.get('accountId')}
+                item_key=identity(file,folder)
+                fresh += cat.db.execute('INSERT OR IGNORE INTO folder_items VALUES(?,?)',(job['key'],item_key)).rowcount
                 mime=effective_mime(file)
                 if mime=='application/vnd.google-apps.folder' or file.get('isFolder') is True:
                     cat.add_folder(file,job['source_path']+'/'+str(file.get('name') or 'unnamed'))
                 elif mime=='application/pdf' or (not mime.startswith('application/vnd.google-apps.') and str(file.get('name','')).lower().endswith('.pdf')):
                     cat.add_file(file,job['key'],job['source_path'],folder)
+            if following and not fresh: raise SafeError('METADATA_PAGINATION_NO_PROGRESS')
             cat.db.execute('UPDATE folders SET page=?,status=?,attempts=attempts+1,last_error=NULL,updated=? WHERE key=?',
                            (following or job['page'],'pending' if following else 'done',now(),job['key']))
         return job['key']
-    except AuthExpired: raise
+    except (AuthExpired,RatePaused): raise
     except SafeError as error:
         with cat.db: cat.db.execute("UPDATE folders SET status='failed',attempts=attempts+1,last_error=?,updated=? WHERE key=?",(error.code,now(),job['key']))
         cat.event(error.code); return ('failed',job['key'])

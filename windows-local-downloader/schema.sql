@@ -9,6 +9,9 @@ CREATE TABLE IF NOT EXISTS folders(
 CREATE TABLE IF NOT EXISTS folder_pages(
  folder_key TEXT NOT NULL REFERENCES folders(key), page INTEGER NOT NULL,
  PRIMARY KEY(folder_key,page));
+CREATE TABLE IF NOT EXISTS folder_items(
+ folder_key TEXT NOT NULL REFERENCES folders(key), item_key TEXT NOT NULL,
+ PRIMARY KEY(folder_key,item_key));
 CREATE TABLE IF NOT EXISTS manuals(
  key TEXT PRIMARY KEY, file_id TEXT NOT NULL, account_id TEXT NOT NULL,
  request_id TEXT NOT NULL, source_filename TEXT NOT NULL, local_filename TEXT NOT NULL,
@@ -17,7 +20,7 @@ CREATE TABLE IF NOT EXISTS manuals(
  status TEXT NOT NULL DEFAULT 'pending', attempts INTEGER NOT NULL DEFAULT 0,
  http_status INTEGER, actual_size INTEGER, sha256 TEXT,
  signature_ok INTEGER NOT NULL DEFAULT 0, verification TEXT NOT NULL DEFAULT 'unverified',
- last_error TEXT, discovered TEXT NOT NULL, started TEXT, finished TEXT);
+ last_error TEXT, discovered TEXT NOT NULL, started TEXT, finished TEXT, UNIQUE(account_id,file_id));
 CREATE TABLE IF NOT EXISTS file_refs(
  file_key TEXT NOT NULL REFERENCES manuals(key), folder_key TEXT NOT NULL REFERENCES folders(key),
  source_id TEXT NOT NULL, source_filename TEXT NOT NULL,

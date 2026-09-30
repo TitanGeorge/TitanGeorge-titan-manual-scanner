@@ -8,7 +8,7 @@ import sqlite3
 import sys
 import threading
 
-from core import AuthExpired, Catalog, DiskLow, HARD_LIMIT, Pacer, RunLock, SafeError, disk_check, download, recover
+from core import AuthExpired, Catalog, DiskLow, HARD_LIMIT, RatePaused, Pacer, RunLock, SafeError, disk_check, download, recover
 from inventory import next_page, seed
 from service import Service
 
@@ -57,7 +57,7 @@ def execute_run(cat,service,settings):
                 failure=None
                 for future in futures:
                     try: future.result()
-                    except (AuthExpired,DiskLow) as error: stop.set(); failure=error
+                    except (AuthExpired,DiskLow,RatePaused) as error: stop.set(); failure=error
                     except BaseException: stop.set(); raise
                 if failure: raise failure
             else:
@@ -108,6 +108,8 @@ def main():
             return 0
     except AuthExpired:
         print('Authentication expired or login rejected. Run resume-download.bat and log in again.'); return 3
+    except RatePaused:
+        print('Server rate limit requires a pause. Wait before using resume-download.bat.'); return 8
     except DiskLow:
         print('Paused for low disk space. Free space, then run resume-download.bat.'); return 4
     except SafeError as error: print(error.code); return 5
