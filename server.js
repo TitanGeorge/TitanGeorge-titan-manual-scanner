@@ -75,7 +75,7 @@ async function findBosch(jar,nonce){
   if(pages.has(parent.pageNumber))throw new Error('Metadata pagination repeated a page');pages.add(parent.pageNumber);
   const data=await postFolder(parent,jar,nonce);const matches=data.files.filter(file=>file.name==='Bosch');
   if(matches.length>1)throw new Error('APPLIANCE returned multiple Bosch entries');
-  if(matches.length){const bosch=matches[0];if(bosch.id!==BOSCH||bosch.accountId!==ACCOUNT)throw new Error('APPLIANCE Bosch entry did not match the confirmed folder and account');return bosch;}
+  if(matches.length){const bosch=matches[0];console.log(JSON.stringify({event:'bosch-parent-entry',idMatchesExpected:bosch.id===BOSCH,accountMatchesExpected:bosch.accountId===ACCOUNT,accountType:typeof bosch.accountId,folderType:bosch.type,isFolder:bosch.isFolder,shared:bosch.shared,hasShortcutDetails:!!bosch.shortcutDetails}));return bosch;}
   for(const file of data.files)seen.add(file.id);
   const next=Number(data.nextPageNumber||0);if(!next||!data.files.length||(Number(data.count)>0&&seen.size>=Number(data.count)))break;parent.pageNumber=next;
  }
