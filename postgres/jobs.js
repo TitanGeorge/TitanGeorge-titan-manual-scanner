@@ -58,7 +58,7 @@ export async function processPage(db,lease,{files,nextPage=null}){
    }else if(type==='application/pdf'||(!type.includes('google-apps')&&/\.pdf$/i.test(source.name||''))){
     const fid=await putFile(db,{account,id,name:source.name??null,size:size(source.size),mime:type||'application/pdf',metadata:source},'direct_igd',{allowChanged:true});
     const prior=(await db.query('SELECT observed_size FROM scan_files WHERE scan_id=$1 AND file_id=$2',[job.scan_id,fid])).rows[0];if(prior?.observed_size!=null&&source.size!=null&&String(prior.observed_size)!==size(source.size))throw new Error('Conflicting file size within scan');
-    await db.query('INSERT INTO scan_files(scan_id,file_id,observed_name,observed_size,observed_metadata) VALUES($1,$2,$3,$4,$5) ON CONFLICT(scan_id,file_id) DO NOTHING',[job.scan_id,fid,source.name??null,size(source.size),JSON.stringify(source)]);
+    await db.query('INSERT INTO scan_files(scan_id,file_id,observed_name,observed_size,observed_metadata) VALUES($1,$2,$3,$4,$5) ON CONFLICT(scan_id,file_id) DO UPDATE SET observed_name=coalesce(scan_files.observed_name,excluded.observed_name),observed_size=coalesce(scan_files.observed_size,excluded.observed_size),observed_metadata=CASE WHEN scan_files.observed_metadata IS NULL OR (scan_files.observed_size IS NULL AND excluded.observed_size IS NOT NULL) THEN excluded.observed_metadata ELSE scan_files.observed_metadata END',[job.scan_id,fid,source.name??null,size(source.size),JSON.stringify(source)]);
     await db.query(`INSERT INTO folder_files(scan_id,folder_id,file_id,provenance,relationship_completeness) VALUES($1,$2,$3,'direct_igd','observed_partial') ON CONFLICT DO NOTHING`,[job.scan_id,job.folder_id,fid]);
    }
   }

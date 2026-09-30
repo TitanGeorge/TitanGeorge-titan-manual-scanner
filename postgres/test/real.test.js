@@ -56,3 +56,7 @@ real('isolated HTTP startup, persistent status and restart while paused never co
  };
  await run();await run();assert.equal(Number((await status(db,'s')).leased_jobs),0);
 });
+
+real('one failed folder preserves other folders and missing sizes fill from later metadata',async({db})=>{
+ await init(db);await processPage(db,await claimJob(db,'s','root'),{files:[{...root,id:'bad'},{...root,id:'good'}]});await ready(db);const bad=await claimJob(db,'s','bad');await failJob(db,bad,{retryable:false});await ready(db);const good=await claimJob(db,'s','good');await processPage(db,good,{files:[{id:'unknown',name:'unknown.pdf'},{id:'unknown',name:'unknown.pdf',size:'25'}]});const s=await status(db,'s');assert.equal(Number(s.failed_folders),1);assert.equal(Number(s.completed_folders),2);assert.equal(s.total_unique_bytes,'25');assert.equal(Number(s.missing_size_pdfs),0);assert.equal(Number(s.unique_pdfs),1);
+});
