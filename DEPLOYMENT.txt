@@ -1,0 +1,1 @@
+Ready for deployment as a metadata-only service.
