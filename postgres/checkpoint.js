@@ -55,3 +55,10 @@ export function parseCheckpoint(saved,{expected=ACCEPTANCE}={}){
  if(expected===ACCEPTANCE){if(saved.root!=='1-0mICiR1DYKpV73iISmEV8DcuyTe-Pc-'||String(saved.account)!=='11257309238295447992')fail('Checkpoint root or account differs from legacy crawler');const f=[...folders.values()].filter(f=>f.status!=='completed');if(f.length!==1||f[0].status!=='failed'||f[0].metadata?.name!=='UNSORTED MISC PDF FILES'||saved.queue.length)fail('Expected only the blocked UNSORTED MISC PDF FILES folder');}
  return {root:saved.root,account:String(saved.account),folders:[...folders.values()],files:[...files.values()],relationships,totals,sha:digest(saved),report:{...totals,missingSizePdfs:missing,knownRelationships:relationships.length,unmatchedParents,accountDifferences,folderInserts:folders.size,fileUpserts:files.size,relationshipInserts:relationships.length,blockedJobs:unresolved.size,databaseChanges:false,existingDatabaseCompared:false}};
 }
+
+// Complete structural folder metadata is retained; credentials and capability URLs are rejected.
+export function folderMetadata(source){
+ if(!source||typeof source!=='object'||Array.isArray(source))throw new Error('Folder object required');
+ const walk=value=>{if(Array.isArray(value))return value.map(walk);if(value&&typeof value==='object'){const out={};for(const [key,item] of Object.entries(value)){if(/nonce|cookie|password|credential|authorization|session|token|secret|resource.?key|link|url|header/i.test(key))continue;out[key]=walk(item);}return out;}if(value===null||['string','number','boolean'].includes(typeof value))return value;throw new Error('Invalid folder metadata');};
+ return walk(source);
+}
