@@ -1,0 +1,1 @@
+Trigger Render auto-deploy after verifying the current main branch contains the metadata-only Service Alliance authentication test. No credentials, cookies, nonces, or PDF content are stored in this file.
