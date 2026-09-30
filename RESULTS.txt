@@ -1,0 +1,1 @@
+Results exposed as aggregate counters through /status. No manual catalog is persisted.
