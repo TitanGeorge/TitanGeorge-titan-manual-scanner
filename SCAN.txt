@@ -1,0 +1,3 @@
+Scope: APPLIANCE folder metadata only.
+Delay: 750ms per folder/page request.
+Retries: 3.
