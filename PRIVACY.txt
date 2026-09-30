@@ -1,0 +1,1 @@
+Credentials and session material are not persisted by application code.
