@@ -10,4 +10,4 @@ try{
   if(!scanId||process.env.TITAN_OFFLINE_IMPORT_APPROVED!=='yes'||!process.env.TITAN_IMPORT_DATABASE_URL)throw new Error('Explicit offline import approval, isolated database URL, and scan ID required');
   const {Client}=await import('pg');const {importCheckpoint}=await import('./importer.js');const client=new Client({connectionString:process.env.TITAN_IMPORT_DATABASE_URL});await client.connect();try{console.log(JSON.stringify(await importCheckpoint(client,saved,{scanId}),null,2));}finally{await client.end();}
  }
-}catch{console.error('Offline operation failed. Check checkpoint structure, exact reconciliation, and isolated database configuration. No source requests were made.');process.exitCode=1;}
+}catch(error){if(/^Reconciliation mismatch:/.test(error.message))console.error(error.message);console.error('Offline operation failed. Check checkpoint structure, exact reconciliation, and isolated database configuration. No source requests were made.');process.exitCode=1;}

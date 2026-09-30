@@ -6,7 +6,7 @@ export async function importCheckpoint(db,saved,{scanId,expected=ACCEPTANCE}={})
   // Serialize catalog writers; workers use the same lock before page writes.
   await db.query('SELECT pg_advisory_xact_lock(741926)');
   const existing=(await db.query('SELECT * FROM scan_runs WHERE id=$1 FOR UPDATE',[scanId])).rows[0];
-  if(existing){if(existing.import_sha256!==plan.sha||existing.crawling_enabled)throw new Error('Scan already exists or is enabled');const s=await status(db,scanId);reconcile({completedFolders:s.completed_folders,uniquePdfs:s.unique_pdfs,totalBytes:s.total_unique_bytes,unresolvedFolders:BigInt(s.failed_folders)+BigInt(s.pending_folders)},expected);return {alreadyImported:true,status:s};}
+  if(existing){if(existing.import_sha256!==plan.sha||existing.crawling_enabled)throw new Error('Scan already exists or is enabled');const s=await status(db,scanId);reconcile({completedFolders:s.completed_folders,uniquePdfs:s.unique_pdfs,totalBytes:s.total_unique_bytes,unresolvedFolders:BigInt(s.failed_folders)+BigInt(s.pending_folders)},expected);if(Number(s.blocked_jobs)!==plan.totals.unresolvedFolders||Number(s.leased_jobs)!==0)throw new Error('Job reconciliation mismatch');return {alreadyImported:true,status:s};}
   await db.query(`INSERT INTO scan_runs(id,root_identity,account_id,status,provenance,import_sha256) VALUES($1,$2,$3,'paused','legacy_checkpoint',$4)`,[scanId,plan.root,plan.account,plan.sha]);
   const folders=new Map(),files=new Map();
   for(const f of plan.folders){const r=(await db.query(`INSERT INTO folders(scan_id,account_id,drive_folder_id,name,source_metadata,provenance,metadata_completeness,crawl_status,next_page,attempts,last_error)

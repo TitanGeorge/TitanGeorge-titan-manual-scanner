@@ -8,7 +8,7 @@ export function identity(key){
  if(!account||!id)fail('Empty source identity');return {account,id};
 }
 export function size(value){
- if(value===null||value===undefined)return null;
+ if(value===null||value===undefined)return null;if(typeof value==='number'&&!Number.isSafeInteger(value))fail('Unsafe numeric size; use decimal string');
  if(!/^\d+$/.test(String(value)))fail('Invalid size');
  const n=BigInt(value);if(n>9223372036854775807n)fail('Size exceeds PostgreSQL bigint');return n.toString();
 }
@@ -52,6 +52,6 @@ export function parseCheckpoint(saved,{expected=ACCEPTANCE}={}){
   if(file.parentId){const candidates=[...folders.values()].filter(f=>f.id===String(file.parentId));if(candidates.length===1)relationships.push({folderKey:candidates[0].key,fileKey:key});else unmatchedParents++;}
  }
  const totals={completedFolders:done.size,uniquePdfs:files.size,totalBytes:bytes.toString(),unresolvedFolders:unresolved.size};reconcile(totals,expected);
- if(expected===ACCEPTANCE){const f=[...folders.values()].filter(f=>f.status!=='completed');if(f.length!==1||f[0].status!=='failed'||f[0].metadata?.name!=='UNSORTED MISC PDF FILES'||saved.queue.length)fail('Expected only the blocked UNSORTED MISC PDF FILES folder');}
+ if(expected===ACCEPTANCE){if(saved.root!=='1-0mICiR1DYKpV73iISmEV8DcuyTe-Pc-'||String(saved.account)!=='11257309238295447992')fail('Checkpoint root or account differs from legacy crawler');const f=[...folders.values()].filter(f=>f.status!=='completed');if(f.length!==1||f[0].status!=='failed'||f[0].metadata?.name!=='UNSORTED MISC PDF FILES'||saved.queue.length)fail('Expected only the blocked UNSORTED MISC PDF FILES folder');}
  return {root:saved.root,account:String(saved.account),folders:[...folders.values()],files:[...files.values()],relationships,totals,sha:digest(saved),report:{...totals,missingSizePdfs:missing,knownRelationships:relationships.length,unmatchedParents,accountDifferences,folderInserts:folders.size,fileUpserts:files.size,relationshipInserts:relationships.length,blockedJobs:unresolved.size,databaseChanges:false,existingDatabaseCompared:false}};
 }

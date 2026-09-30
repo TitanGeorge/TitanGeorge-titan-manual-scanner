@@ -19,9 +19,9 @@ export async function claimJob(db,scanId,owner,seconds=60){
 async function fenced(db,lease,{completed=false}={}){
  const run=(await db.query('SELECT crawling_enabled FROM scan_runs WHERE id=$1 FOR UPDATE',[lease.scan_id])).rows[0];
  const job=(await db.query('SELECT * FROM crawl_jobs WHERE id=$1 AND scan_id=$2 FOR UPDATE',[lease.id,lease.scan_id])).rows[0];
- if(!job||String(job.lease_token)!==String(lease.lease_token)||job.folder_id!==lease.folder_id||job.page!==lease.page)throw new Error('Stale worker');
+ if(!job||String(job.lease_token)!==String(lease.lease_token)||String(job.folder_id)!==String(lease.folder_id)||String(job.page)!==String(lease.page))throw new Error('Stale worker');
  if(completed&&job.status==='completed')return job;
- if(!run?.crawling_enabled||job.status!=='processing'||job.lease_owner!==lease.lease_owner||new Date(job.lease_expires_at)<=new Date())throw new Error('Stale worker or disabled scan');
+ if(!run?.crawling_enabled||job.status!=='processing'||job.lease_owner!==lease.lease_owner)throw new Error('Stale worker or disabled scan');
  // Database clock remains authoritative even if application clock differs.
  if(!(await db.query('SELECT lease_expires_at>clock_timestamp() AS valid FROM crawl_jobs WHERE id=$1',[job.id])).rows[0].valid)throw new Error('Expired lease');return job;
 }
@@ -41,9 +41,9 @@ export async function processPage(db,lease,{files,nextPage=null}){
  return transaction(db,async()=>{
   await db.query('SELECT pg_advisory_xact_lock(741926)');const job=await fenced(db,lease,{completed:true});
   if(job.status==='completed'){const old=(await db.query('SELECT result_sha256 FROM processed_pages WHERE job_id=$1',[job.id])).rows[0];if(old?.result_sha256!==hash)throw new Error('Page replay differs');return {alreadyCommitted:true};}
-  const folder=(await db.query('SELECT * FROM folders WHERE id=$1 FOR UPDATE',[job.folder_id])).rows[0];if(folder.crawl_status==='completed'||Number(folder.next_page)!==Number(job.page))throw new Error('Completed folder or pagination mismatch');
+  const folder=(await db.query('SELECT * FROM folders WHERE id=$1 FOR UPDATE',[job.folder_id])).rows[0];const rootAccount=(await db.query('SELECT account_id FROM scan_runs WHERE id=$1',[job.scan_id])).rows[0].account_id;if(folder.crawl_status==='completed'||Number(folder.next_page)!==Number(job.page))throw new Error('Completed folder or pagination mismatch');
   for(const source of clean){
-   const key=observedIdentity(source,folder.account_id),{account,id}=identity(key),type=source.shortcutDetails?.targetMimeType||source.type||source.mimeType||'';
+   const key=observedIdentity(source,rootAccount),{account,id}=identity(key),type=source.shortcutDetails?.targetMimeType||source.type||source.mimeType||'';
    if(type==='application/vnd.google-apps.folder'||source.isFolder===true){
     const child=(await db.query(`INSERT INTO folders(scan_id,account_id,drive_folder_id,parent_identity,name,source_metadata,provenance,metadata_completeness,crawl_status,next_page,discovered_at)
      VALUES($1,$2,$3,$4,$5,$6,'direct_igd','observed','pending',1,now()) ON CONFLICT(scan_id,account_id,drive_folder_id) DO UPDATE SET
