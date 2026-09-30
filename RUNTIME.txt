@@ -1,0 +1,1 @@
+Aggregate scan state is volatile and resets when the Render process restarts.
