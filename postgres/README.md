@@ -104,3 +104,7 @@ These steps require future authorization; none was performed here.
 ## Production safety record
 
 Only incremental GitHub commits/ref advances on `postgres-checkpoint-migration` were performed remotely. Default branch, production application files, Render service/configuration/environment/build/start settings and production endpoints were untouched. No Render tools, production POST requests, crawler starts, Service Alliance requests, unresolved-folder attempts, PDF requests, R2 operations or Supabase operations were performed.
+
+## Fresh rebuild preparation (2026-09-30)
+
+The no-checkpoint fresh path now has a separate paused initializer, guarded runtime, real PostgreSQL tests and change-aware comparison tooling. See [FRESH_REBUILD_RUNBOOK.md](FRESH_REBUILD_RUNBOOK.md) for the authoritative future deployment procedure and [PREPARATION_REPORT.md](PREPARATION_REPORT.md) for evidence and limitations. The earlier recovery/import instructions remain applicable only to an actual recovered checkpoint. Do not apply strict historical aggregate acceptance to a fresh scan. Neither legacy source nor Render configuration is modified by this preparation.

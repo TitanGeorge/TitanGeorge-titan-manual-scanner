@@ -1,0 +1,49 @@
+waiting for server to start.... done
+server started
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test
+> node --test test/*.test.js
+
+✔ synthetic fresh scan starts empty and paused then commits one validation page (1339.329158ms)
+✔ synthetic full nested folder structure retains request data and strips credentials recursively (1.226753ms)
+✔ synthetic authenticated IGD transcript preserves shortcode 7 nested folder request and Bosch-shaped 379-item response (6016.369691ms)
+✔ dry run preserves keys, strips secrets, and leaves legacy parent completeness unknown (3.138973ms)
+✔ malformed identities, duplicates, invalid sizes and mismatches fail (0.909835ms)
+✔ atomic import, repeat import, incomplete relationships, blocked jobs and restart status (1381.721729ms)
+✔ database size conflict rolls back all inserted scan state (662.956499ms)
+✔ post-write reconciliation mismatch rolls back the complete import (664.59183ms)
+✔ production acceptance totals dry-run on synthetic catalog (421.677954ms)
+✔ final count reconciliation failure rolls back relationships and files (596.753718ms)
+✔ deduplication, duplicate references, shortcut targets, idempotence and pagination (1375.82838ms)
+✔ lease expiry, stale worker fencing, heartbeat and retry delay (766.734441ms)
+✔ page failures roll back file inserts and pagination (764.5891ms)
+✔ completed child folders remain protected and extra parents do not duplicate files (651.641097ms)
+✔ fresh database process resumes durable pagination without RAM checkpoint (989.785697ms)
+✔ pause prevents new leases and drains existing page atomically (589.902267ms)
+✔ real PostgreSQL: empty migrations, repeat migrations, paused initialization and duplicate root guard (115.211036ms)
+✔ real PostgreSQL: dedup, shortcuts, folder relationships, replay, nested folder retention and completed protection (111.971292ms)
+✔ real PostgreSQL: rollback after mid-page failure leaves all rows and pagination retryable (144.651888ms)
+✔ real PostgreSQL: two simultaneous connections cannot claim the same job (72.596841ms)
+✔ real PostgreSQL: multiple real connections claim distinct jobs within bounded concurrency (247.637453ms)
+✔ real PostgreSQL: expiry, heartbeat, fencing token and stale worker rejection (234.021231ms)
+✔ real PostgreSQL: pause persists across new process and drains an in-flight page (366.115114ms)
+✔ real PostgreSQL: retry timing, sanitized errors, retry cap and expired crash cap (69.428619ms)
+✔ real PostgreSQL: rate gate and worker invocation only after explicit enable (84.857286ms)
+✔ real PostgreSQL: SIGKILL before page commit rolls back then a new process resumes (30257.467007ms)
+✔ real PostgreSQL: commit survives process exit and a completely new process resumes persisted pagination (227.359735ms)
+✔ synthetic browser-compatible nested POST encoding (0.366033ms)
+✔ real PostgreSQL: historical deltas and retained baseline differences accept legitimate filename and size changes (57.749389ms)
+✔ real PostgreSQL: repeated expired worker leases terminate at the retry ceiling (45.598025ms)
+✔ real PostgreSQL: one-page validation budget pauses automatically after commit (46.91592ms)
+✔ real PostgreSQL: isolated HTTP startup, persistent status and restart while paused never contact source (255.145643ms)
+✔ real PostgreSQL: one failed folder preserves other folders and missing sizes fill from later metadata (64.610738ms)
+✔ real PostgreSQL: standalone worker command coexists with status application and stays dormant while paused (1127.74212ms)
+ℹ tests 34
+ℹ suites 0
+ℹ pass 34
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 33634.88418
