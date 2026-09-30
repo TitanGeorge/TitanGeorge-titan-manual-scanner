@@ -1,0 +1,6 @@
+1. No igd_download action.
+2. No PDF HTTP requests.
+3. No filesystem writes for manuals.
+4. No database.
+5. No object storage.
+6. Auth used only for current process memory.
