@@ -1,0 +1,1 @@
+Authentication material is ephemeral and must not be committed or logged.
