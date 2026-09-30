@@ -30,8 +30,11 @@ async function request(jar,url,opts={}){
 }
 async function follow(jar,r,max=8){let cur=r;for(let i=0;i<max&&cur.status>=300&&cur.status<400;i++){const loc=cur.headers.get('location');if(!loc)break;cur=await request(jar,new URL(loc,cur.url).href,{method:'GET'})}return cur}
 function extractNonce(html){
- const patterns=[/\bnonce\s*:\s*["']([^"']+)["']/i,/\bnonce["']?\s*:\s*["']([^"']+)["']/i,/["']nonce["']\s*:\s*["']([^"']+)["']/i];
- for(const p of patterns){const m=html.match(p);if(m)return m[1]}
+ // Only inspect the Integrate Google Drive configuration, never another plugin's nonce.
+ for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)){
+  const config=script[1].match(/\b(?:var|let|const)\s+igd\s*=\s*(\{[\s\S]*?\})\s*;/);
+  if(config){try{const value=JSON.parse(config[1]).nonce;if(typeof value==='string'&&value.length)return value}catch{}}
+ }
  return null;
 }
 function dashboardLooksAuthenticated(url,html){return /\/legacy\/member-dashboard\/?/i.test(url)&&!/unauthorized-access|name=["']log["']|name=["']pwd["']/i.test(html)}
@@ -48,12 +51,18 @@ async function loginAndGetSession(){
 }
 async function postFolder(folder,jar,nonce){
  const body=new URLSearchParams();body.set('action','igd_get_files');body.set('shortcodeId','7');body.set('nonce',nonce);body.set('data[folder][id]',folder.id);body.set('data[folder][name]',folder.name||'');body.set('data[folder][accountId]',folder.accountId||ACCOUNT);body.set('data[folder][pageNumber]',String(folder.pageNumber||1));body.set('data[sort][sortBy]','name');body.set('data[sort][sortDirection]','asc');body.set('data[fileNumbers]','-1');body.set('data[limit]','0');
- const r=await request(jar,AJAX,{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded; charset=UTF-8','x-requested-with':'XMLHttpRequest','referer':MANUALS},body});if(!r.ok)throw new Error('Metadata request HTTP '+r.status);const text=await r.text();let j;try{j=JSON.parse(text)}catch{throw new Error('Metadata endpoint returned non-JSON response')}return j?.data??j;
+ const r=await request(jar,AJAX,{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded; charset=UTF-8','x-requested-with':'XMLHttpRequest','referer':MANUALS},body});if(!r.ok)throw new Error('Metadata request HTTP '+r.status);const text=await r.text();let j;try{j=JSON.parse(text)}catch{throw new Error('Metadata endpoint returned non-JSON response')}if(j?.success===false)throw new Error('Metadata request was rejected by Service Alliance');const data=j?.data??j;if(data?.error)throw new Error('Service Alliance returned a metadata error');if(!Array.isArray(data?.files))throw new Error('Metadata response did not contain files[]');return data;
+}
+function safeError(error){
+ const message=String(error?.message||'');
+ const allowed=['SAG_USERNAME or SAG_PASSWORD is not configured in Render','Login did not reach authenticated member dashboard','Tech Manuals page was not authenticated','Authenticated, but igd.nonce was not found on Tech Manuals page','Metadata endpoint returned non-JSON response','Metadata request was rejected by Service Alliance','Service Alliance returned a metadata error','Metadata response did not contain files[]'];
+ if(allowed.includes(message)||/^Metadata request HTTP \d{3}$/.test(message))return message;
+ return 'Authentication or metadata request failed; internal details withheld';
 }
 app.post('/auth-test',async(req,res)=>{
  if(authTest.status==='running')return res.status(409).json({error:'auth test already running'});authTest.status='running';authTest.dashboardVerified=false;authTest.nonceFound=false;authTest.bosch=null;authTest.lastError=null;authTest.finishedAt=null;let jar;
- try{const s=await loginAndGetSession();jar=s.jar;authTest.dashboardVerified=true;authTest.nonceFound=true;const data=await postFolder({id:BOSCH,name:'Bosch',accountId:ACCOUNT,pageNumber:1},jar,s.nonce);const files=Array.isArray(data?.files)?data.files:[];const folders=files.filter(x=>String(x.type||'').includes('folder')).length;const pdfs=files.filter(x=>String(x.name||'').toLowerCase().endsWith('.pdf')).length;authTest.bosch={items:files.length,folders,pdfs,count:data?.count??files.length,nextPageNumber:Number(data?.nextPageNumber||0)};authTest.status='success';authTest.finishedAt=new Date().toISOString();return res.json({success:true,mode:'BOSCH_METADATA_ONLY',dashboardVerified:true,nonceFound:true,bosch:authTest.bosch,pdfDownloads:0,pdfBytesStored:0,secretsLogged:false});}
- catch(e){authTest.status='error';authTest.lastError=String(e?.message||e);authTest.finishedAt=new Date().toISOString();return res.status(500).json({success:false,mode:'BOSCH_METADATA_ONLY',error:authTest.lastError,pdfDownloads:0,pdfBytesStored:0,secretsLogged:false});}
+ try{const s=await loginAndGetSession();jar=s.jar;authTest.dashboardVerified=true;authTest.nonceFound=true;const data=await postFolder({id:BOSCH,name:'Bosch',accountId:ACCOUNT,pageNumber:1},jar,s.nonce);const files=Array.isArray(data?.files)?data.files:[];const folders=files.filter(x=>String(x.type||'').includes('folder')).length;const pdfs=files.filter(x=>String(x.name||'').toLowerCase().endsWith('.pdf')).length;authTest.bosch={items:files.length,folders,pdfs,count:data?.count??files.length,nextPageNumber:Number(data?.nextPageNumber||0)};authTest.status='success';authTest.finishedAt=new Date().toISOString();return res.json({success:true,mode:'BOSCH_METADATA_ONLY',authenticationSuccess:true,dashboardVerified:true,nonceFound:true,bosch:authTest.bosch,pdfDownloads:0,pdfBytesStored:0,secretsLogged:false});}
+ catch(e){authTest.status='error';authTest.lastError=safeError(e);authTest.finishedAt=new Date().toISOString();return res.status(500).json({success:false,mode:'BOSCH_METADATA_ONLY',authenticationSuccess:authTest.dashboardVerified,dashboardVerified:authTest.dashboardVerified,error:authTest.lastError,pdfDownloads:0,pdfBytesStored:0,secretsLogged:false});}
  finally{if(jar)jar.clear()}
 });
 
@@ -61,3 +70,4 @@ app.post('/scan',async(req,res)=>{
  if(state.status==='running')return res.status(409).json({error:'scan already running'});return res.status(400).json({error:'Full scan is intentionally disabled until the Bosch authentication test succeeds.'});
 });
 app.listen(PORT,()=>console.log(`Titan metadata-only scanner listening on ${PORT}`));
+
