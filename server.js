@@ -57,7 +57,7 @@ function appendParams(body,key,value){
  else body.append(key,value==null?'':String(value));
 }
 const ajaxTargets=new WeakMap();
-async function postFolder(folder,jar,nonce){
+async function postFolder(folder,jar,nonce,limit=0){
  let target=ajaxTargets.get(jar);
  if(!target){
  const page=await request(jar,MANUALS,{method:'GET',signal:AbortSignal.timeout(90000),headers:{referer:DASH}});const html=await page.text();let ajaxUrl;
@@ -65,7 +65,7 @@ async function postFolder(folder,jar,nonce){
  if(!ajaxUrl)throw new Error('IGD AJAX URL was not found');target=new URL(ajaxUrl,BASE);if(target.origin!==BASE)throw new Error('IGD AJAX URL origin did not match');ajaxTargets.set(jar,target);
  }
  // Preserve the entire IGD folder object; the frontend only sets pageNumber.
- const payload={action:'igd_get_files',shortcodeId:7,data:{folder,sort:{sortBy:'name',sortDirection:'desc'},fileNumbers:-1,limit:0},nonce};
+ const payload={action:'igd_get_files',shortcodeId:7,data:{folder,sort:{sortBy:'name',sortDirection:'desc'},fileNumbers:-1,limit},nonce};
  const body=new URLSearchParams();for(const [key,value] of Object.entries(payload))appendParams(body,key,value);
  const r=await request(jar,target.href,{method:'POST',signal:AbortSignal.timeout(90000),headers:{'content-type':'application/x-www-form-urlencoded; charset=UTF-8','x-requested-with':'XMLHttpRequest',referer:MANUALS},body});
  if(!r.ok)throw new Error('Metadata request HTTP '+r.status);let j;try{j=JSON.parse(await r.text())}catch{throw new Error('Metadata endpoint returned non-JSON response')}
@@ -130,10 +130,10 @@ async function getScanSession(force=false){
  if(force||!scanSession||Date.now()-sessionAt>30*60*1000){if(scanSession)scanSession.jar.clear();scanSession=await loginAndGetSession();sessionAt=Date.now();state.sessionRenewals=(state.sessionRenewals||0)+1}
  return scanSession;
 }
-async function listWithRetry(folder){
+async function listWithRetry(folder,limit=500){
  let last;for(let attempt=0;attempt<5;attempt++){
   if(stopping)throw new Error('Inventory interrupted');
-  try{const session=await getScanSession(attempt>0&&attempt%2===1);return await postFolder(folder,session.jar,session.nonce)}
+  try{const session=await getScanSession(attempt>0&&attempt%2===1);const data=await postFolder(folder,session.jar,session.nonce,limit);state.requests=(state.requests||0)+1;return data}
   catch(error){last=error;state.retries=(state.retries||0)+1;state.lastError=safeError(error);await saveCheckpoint();if(attempt<4)await delay(Math.min(30000,1500*2**attempt))}
  }
  throw last;
@@ -145,10 +145,12 @@ function recordPdf(file,parent){
 }
 async function scanOne(job){
  const seenFiles=new Set(),pages=new Set();let pageNumber=1;
+ // Warm the server cache before paging: IGD initially slices API order before sorting.
+ await listWithRetry({...job.folder,pageNumber:1},1);
  for(let i=0;i<10000;i++){
   if(pages.has(pageNumber))throw new Error('Metadata pagination repeated a page');pages.add(pageNumber);
-  job.folder.pageNumber=pageNumber;const data=await listWithRetry(job.folder);state.requests=(state.requests||0)+1;
-  let fresh=0;for(const file of data.files){const key=objectKey(file);if(!seenFiles.has(key)){seenFiles.add(key);fresh++}if(effectiveType(file)===folderMime||file.isFolder===true)enqueueFolder(file);else if(effectiveType(file)==='application/pdf'||(!effectiveType(file).includes('google-apps')&&/\.pdf$/i.test(file.name||'')))recordPdf(file,job.folder)}
+  job.folder.pageNumber=pageNumber;const data=await listWithRetry(job.folder);
+  let fresh=0;for(const file of data.files){const key=(file.accountId||ACCOUNT)+':'+file.id;if(!seenFiles.has(key)){seenFiles.add(key);fresh++}if(effectiveType(file)===folderMime||file.isFolder===true)enqueueFolder(file);else if(effectiveType(file)==='application/pdf'||(!effectiveType(file).includes('google-apps')&&/\.pdf$/i.test(file.name||'')))recordPdf(file,job.folder)}
   const next=Number(data.nextPageNumber||0),count=Number(data.count);
   if(!next||!data.files.length||(Number.isFinite(count)&&seenFiles.size>=count))return;
   if(!fresh)throw new Error('Metadata pagination made no progress');
