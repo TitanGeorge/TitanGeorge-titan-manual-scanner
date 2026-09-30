@@ -1,0 +1,1 @@
+Counts Service Alliance APPLIANCE manual metadata to estimate PDF count and storage requirements. Does not download manuals.
