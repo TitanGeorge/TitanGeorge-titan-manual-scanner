@@ -1,0 +1,8 @@
+{
+  "destination": "C:\\Service Manuals",
+  "concurrency": 1,
+  "delay_seconds": 2.0,
+  "minimum_free_gib": 5.0,
+  "retries": 3,
+  "metadata_pages_per_run": 20
+}
