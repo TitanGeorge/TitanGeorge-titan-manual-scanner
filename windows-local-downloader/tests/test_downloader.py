@@ -88,6 +88,13 @@ class Tests(unittest.TestCase):
     def test_sanitize_reserved_invalid_and_trailing(self):
         for name in ('CON','con.pdf','AUX','LPT1.txt','COM9','NUL. '): self.assertTrue(safe_component(name).startswith('_'))
         self.assertEqual(safe_component('a<>:"/\\|?*b. '),'a_________b'); self.assertEqual(safe_component('..'),'unnamed')
+    def test_unicode_windows_length(self):
+        row=self.file(name='😀'*200+'.pdf')
+        self.assertLessEqual(len(row['local_filename'].encode('utf-16-le'))//2,150)
+        self.assertLessEqual(len(row['local_path'].encode('utf-16-le'))//2,240)
+    def test_additional_reserved_windows_devices(self):
+        for name in ('COM¹.pdf','LPT².pdf','CONIN$','CONOUT$'):
+            self.assertTrue(safe_component(name).startswith('_'))
     def test_filename_case_collisions_and_original(self):
         first=self.file('one','A.pdf'); second=self.file('two','a.pdf')
         self.assertNotEqual(first['local_path'].lower(),second['local_path'].lower()); self.assertEqual(first['source_filename'],'A.pdf')

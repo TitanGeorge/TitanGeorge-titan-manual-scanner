@@ -120,7 +120,7 @@ Run offline tests on Windows from the package directory:
 .venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
-Development validation: **60 offline tests passed** on Python 3.12/Linux using the pinned dependencies. They cover the required SQLite, restart, deduplication, references, names, collisions, parts, HTML, invalid/truncated PDFs, size mismatch, hash, atomic publication, retries, 429/500, auth expiry, disk stop, ten-success limit, CSV, pagination transactions, redirect restrictions, exact protocol fields, sanitized exceptions, and long rate-limit pauses. CLI init/status/export and ZIP integrity are checked separately. Synthetic PDFs are created temporarily by the tests and are not shipped as manuals.
+Development validation: **62 offline tests passed** on Python 3.12/Linux using the pinned dependencies. They cover the required SQLite, restart, deduplication, references, names, collisions, parts, HTML, invalid/truncated PDFs, size mismatch, hash, atomic publication, retries, 429/500, auth expiry, disk stop, ten-success limit, CSV, pagination transactions, redirect restrictions, exact protocol fields, sanitized exceptions, and long rate-limit pauses. CLI init/status/export and ZIP integrity are checked separately. Synthetic PDFs are created temporarily by the tests and are not shipped as manuals.
 
 ## Release status and remaining unknowns
 

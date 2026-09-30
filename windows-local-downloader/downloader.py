@@ -24,7 +24,7 @@ def config():
         if not isinstance(obj['retries'],int) or not 1 <= obj['retries'] <= 5: raise ValueError()
         if not isinstance(obj['metadata_pages_per_run'],int) or not 1 <= obj['metadata_pages_per_run'] <= 20: raise ValueError()
         root=Path(obj['destination'])
-        if not root.is_absolute() or len(str(root))>65: raise ValueError()
+        if not root.is_absolute() or len(str(root).encode('utf-16-le'))//2>65: raise ValueError()
         if os.name=='nt' and str(root).startswith('\\\\'): raise ValueError()
         return obj
     except (OSError,ValueError,TypeError): raise SafeError('CONFIG_INVALID') from None

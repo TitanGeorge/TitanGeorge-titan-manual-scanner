@@ -60,8 +60,14 @@ def size_of(value):
 
 def safe_component(name, limit=70):
     name = re.sub(r'[<>:"/\\|?*\x00-\x1f]', '_', str(name)).strip().rstrip('. ')
-    name = name[:limit].rstrip('. ') or 'unnamed'
-    if re.match(r'^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.|$)', name, re.I): name = '_' + name
+    name = re.sub(r'[\ud800-\udfff]', '_', name)
+    bounded = ''; units = 0
+    for char in name:
+        width = 2 if ord(char) > 65535 else 1
+        if units + width > limit: break
+        bounded += char; units += width
+    name = bounded.rstrip('. ') or 'unnamed'
+    if re.match(r'^(CON|CONIN\$|CONOUT\$|PRN|AUX|NUL|COM[1-9¹²³]|LPT[1-9¹²³])(?:\.|$)', name, re.I): name = '_' + name
     return name
 
 def filename(source, key):
@@ -120,7 +126,7 @@ class Catalog:
         # One source folder (manufacturer) plus stable identity suffix, bounded path.
         folder_label = source_path.split('/')[1] if '/' in source_path else source_path
         path = self.root / safe_component(folder_label, 45) / local_name
-        if len(str(path)) > 240: raise SafeError('DESTINATION_PATH_TOO_LONG')
+        if len(str(path).encode('utf-16-le')) // 2 > 240: raise SafeError('DESTINATION_PATH_TOO_LONG')
         with (nullcontext() if self.db.in_transaction else self.db):
             self.db.execute('''INSERT OR IGNORE INTO manuals
                 (key,file_id,account_id,request_id,source_filename,local_filename,folder_key,source_path,mime,expected_size,local_path,discovered)
