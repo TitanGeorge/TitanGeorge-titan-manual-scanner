@@ -1,0 +1,1 @@
+No cloud object storage configured.
