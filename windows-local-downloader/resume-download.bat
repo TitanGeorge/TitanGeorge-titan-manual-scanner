@@ -1,12 +1,5 @@
 @echo off
-setlocal
-cd /d "%~dp0"
-if not exist .venv\Scripts\python.exe (
-  echo Run setup.bat first.
-  pause
-  exit /b 1
-)
-.venv\Scripts\python.exe downloader.py resume
-set "RESULT=%ERRORLEVEL%"
+echo This legacy resume launcher is retired. Use status.bat to inspect local state.
+echo Full downloading requires an explicit full-download.bat launch after migration.
 pause
-exit /b %RESULT%
+exit /b 0

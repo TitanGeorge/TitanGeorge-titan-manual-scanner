@@ -104,9 +104,15 @@ class Catalog:
         self.db.row_factory = sqlite3.Row
         self.db.execute('PRAGMA journal_mode=WAL')
         self.db.execute('PRAGMA synchronous=FULL')
-        self.db.executescript(Path(__file__).with_name('schema.sql').read_text())
-        if self.db.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()[0] != '1':
-            raise SafeError('UNSUPPORTED_SCHEMA_VERSION')
+        exists=self.db.execute("SELECT 1 FROM sqlite_master WHERE name='meta' AND type='table'").fetchone()
+        if not exists:
+            self.db.executescript(Path(__file__).with_name('schema.sql').read_text())
+        version=self.db.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()
+        if not version or version[0] not in ('1','2'):
+            self.db.close(); raise SafeError('UNSUPPORTED_SCHEMA_VERSION')
+        self.version=int(version[0])
+        self.hard_limit=HARD_LIMIT if self.version==1 else None
+        self.active=False
     def close(self): self.db.close()
     def event(self, code, key=None, http=None):
         # Only call with locally defined codes, opaque identity hash and numeric HTTP code.
@@ -127,6 +133,12 @@ class Catalog:
         folder_label = source_path.split('/')[1] if '/' in source_path else source_path
         path = self.root / safe_component(folder_label, 45) / local_name
         if len(str(path).encode('utf-16-le')) // 2 > 240: raise SafeError('DESTINATION_PATH_TOO_LONG')
+        previous=self.db.execute('SELECT * FROM manuals WHERE key=?',(key,)).fetchone()
+        incoming_size=size_of(file.get('size'))
+        if previous and ((previous['folder_key']==folder_key and previous['request_id']==str(file['id']) and previous['source_filename']!=source) or
+                         (incoming_size is not None and previous['expected_size'] is not None and incoming_size!=previous['expected_size'])):
+            self.event('SOURCE_METADATA_CHANGED_REVIEW',key)
+            raise SafeError('SOURCE_METADATA_CHANGED_REVIEW')
         with (nullcontext() if self.db.in_transaction else self.db):
             self.db.execute('''INSERT OR IGNORE INTO manuals
                 (key,file_id,account_id,request_id,source_filename,local_filename,folder_key,source_path,mime,expected_size,local_path,discovered)
@@ -162,7 +174,13 @@ class Catalog:
                 'missing_sizes':sums[2] or 0,'last_success':sums[3],'folder_progress':dict(folder) if folder else None,
                 'failed_folders':self.db.execute("SELECT count(*) FROM folders WHERE status='failed'").fetchone()[0],
                 'available_disk_bytes':shutil.disk_usage(self.root).free,'success_budget_used':self.successes(),
-                'hard_limit':HARD_LIMIT,'limit_reached':self.successes() >= HARD_LIMIT}
+                'hard_limit':self.hard_limit,'limit_reached':self.hard_limit is not None and self.successes() >= self.hard_limit,
+                'schema_version':self.version,'mode':'test' if self.version==1 else 'full',
+                'crawling_active':self.active,'paused':not self.active,
+                'folders_discovered':self.db.execute('SELECT count(*) FROM folders').fetchone()[0],
+                'folders_completed':self.db.execute("SELECT count(*) FROM folders WHERE status='done'").fetchone()[0],
+                'folders_pending':self.db.execute("SELECT count(*) FROM folders WHERE status='pending'").fetchone()[0]}
+
     def export(self):
         path = self.state / 'reports' / 'manifest.csv'
         rows = self.db.execute('SELECT * FROM manuals ORDER BY key')

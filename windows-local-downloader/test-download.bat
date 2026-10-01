@@ -1,12 +1,5 @@
 @echo off
-setlocal
-cd /d "%~dp0"
-if not exist .venv\Scripts\python.exe (
-  echo Run setup.bat first.
-  pause
-  exit /b 1
-)
-.venv\Scripts\python.exe downloader.py test
-set "RESULT=%ERRORLEVEL%"
+echo This test launcher is retired. Use migrate-catalog.bat and status.bat for offline upgrade.
+echo Full downloading requires an explicit full-download.bat launch.
 pause
-exit /b %RESULT%
+exit /b 0
