@@ -96,39 +96,39 @@ def main():
     command=sys.argv[1] if len(sys.argv)==2 else ''
     if command not in ('test','resume','full-resume','migrate','verify','status','export','init'):
         print('Usage: downloader.py init | migrate | verify | status | export | full-resume'); return 2
-    cat=None; service=None
+    cat=None; service=None; lock=None
     try:
         settings=config(); root=Path(settings['destination'])
         root.mkdir(parents=True,exist_ok=True)
-        with RunLock(root/'_catalog'/'run.lock'):
-            if command=='migrate':
-                from migration import promote
-                print(json.dumps(promote(root),indent=2)); return 0
-            cat=Catalog(root)
-            if command=='status': print_status(cat); return 0
-            if command=='export': print('Manifest:',cat.export()); return 0
-            if command=='init':
-                disk_check(root,int(settings['minimum_free_gib']*1024**3)); print('SQLite initialized. No network requests made.'); return 0
-            if command=='verify':
-                recover(cat); print_status(cat); return 0
-            if command in ('test','resume'):
-                raise SafeError('FULL_MODE_REQUIRES_EXPLICIT_FULL_RESUME')
-            if command=='full-resume' and cat.version!=2:
-                raise SafeError('OFFLINE_MIGRATION_REQUIRED')
-            recover(cat)
-            if cat.hard_limit is not None and cat.successes() >= cat.hard_limit:
-                print('TEST LIMIT REACHED: 10 verified PDFs. No further downloads permitted.'); print_status(cat); return 0
-            disk_check(root,int(settings['minimum_free_gib']*1024**3))
-            print('FULL MODE: explicit start/resume, no PDF ceiling.' if cat.version==2 else 'TEST MODE: permanent maximum of 10 successes.')
-            print('Credentials are entered locally and remain in memory only.')
-            username=input('Service Alliance username: ')
-            password=getpass.getpass('Service Alliance password: ')
-            service=Service()
-            try: service.login(username,password)
-            finally: username=password=None
-            result=execute_run(cat,service,settings)
-            print(result); print_status(cat); cat.export()
-            return 0
+        lock=RunLock(root/'_catalog'/'run.lock'); lock.__enter__()
+        if command=='migrate':
+            from migration import promote
+            print(json.dumps(promote(root),indent=2)); return 0
+        cat=Catalog(root)
+        if command=='status': print_status(cat); return 0
+        if command=='export': print('Manifest:',cat.export()); return 0
+        if command=='init':
+            disk_check(root,int(settings['minimum_free_gib']*1024**3)); print('SQLite initialized. No network requests made.'); return 0
+        if command=='verify':
+            recover(cat); print_status(cat); return 0
+        if command in ('test','resume'):
+            raise SafeError('FULL_MODE_REQUIRES_EXPLICIT_FULL_RESUME')
+        if command=='full-resume' and cat.version!=2:
+            raise SafeError('OFFLINE_MIGRATION_REQUIRED')
+        recover(cat)
+        if cat.hard_limit is not None and cat.successes() >= cat.hard_limit:
+            print('TEST LIMIT REACHED: 10 verified PDFs. No further downloads permitted.'); print_status(cat); return 0
+        disk_check(root,int(settings['minimum_free_gib']*1024**3))
+        print('FULL MODE: explicit start/resume, no PDF ceiling.' if cat.version==2 else 'TEST MODE: permanent maximum of 10 successes.')
+        print('Credentials are entered locally and remain in memory only.')
+        username=input('Service Alliance username: ')
+        password=getpass.getpass('Service Alliance password: ')
+        service=Service()
+        try: service.login(username,password)
+        finally: username=password=None
+        result=execute_run(cat,service,settings)
+        print(result); print_status(cat); cat.export()
+        return 0
     except AuthExpired:
         print('Authentication expired or login rejected. Run resume-download.bat and log in again.'); return 3
     except RatePaused:
@@ -147,5 +147,6 @@ def main():
             try: print_status(cat); cat.export()
             except Exception: pass
             cat.close()
+        if lock and lock.handle: lock.__exit__()
 
 if __name__=='__main__': sys.exit(main())

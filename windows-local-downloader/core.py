@@ -240,7 +240,7 @@ def recover(cat):
     for row in cat.db.execute("SELECT * FROM manuals WHERE status='verified'").fetchall():
         try:
             info=verify(Path(row['local_path']),row['expected_size'])
-            if info[1]!=row['sha256']: raise SafeError('VERIFIED_FILE_CHANGED')
+            if info[1]!=row['sha256'] or info[0]!=row['actual_size']: raise SafeError('VERIFIED_FILE_CHANGED')
         except SafeError:
             with cat.db: cat.db.execute("UPDATE manuals SET status='needs_review',verification='local_file_missing_or_changed',last_error='VERIFIED_FILE_NEEDS_REVIEW' WHERE key=?",(row['key'],))
             cat.event('VERIFIED_FILE_NEEDS_REVIEW',row['key'])
