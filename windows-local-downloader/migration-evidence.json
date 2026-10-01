@@ -1,0 +1,44 @@
+{
+  "fixture": "synthetic only, no actual Windows catalog or real PDFs",
+  "before_preserved_state_sha256": "077b7e32f1c3c7bb6ce73627e5a27efd147767efdeb54b5329bd5206f00d2181",
+  "after_preserved_state_sha256": "077b7e32f1c3c7bb6ce73627e5a27efd147767efdeb54b5329bd5206f00d2181",
+  "every_preserved_value_equal": true,
+  "status": {
+    "discovered": 24,
+    "pending": 14,
+    "downloading": 0,
+    "verified": 10,
+    "needs_review": 0,
+    "failed": 0,
+    "needing_retry": 0,
+    "duplicate_references": 0,
+    "verified_bytes": 43253290,
+    "known_remaining_bytes": 496683343,
+    "missing_sizes": 0,
+    "last_success": "2026-10-01T00:47:54.741920+00:00",
+    "folder_progress": {
+      "source_path": "APPLIANCE/Whirlpool Brands - ALL",
+      "page": 1,
+      "status": "pending"
+    },
+    "failed_folders": 0,
+    "available_disk_bytes": 31791095808,
+    "success_budget_used": 10,
+    "hard_limit": null,
+    "limit_reached": false,
+    "schema_version": 2,
+    "mode": "full",
+    "crawling_active": false,
+    "paused": true,
+    "folders_discovered": 1,
+    "folders_completed": 0,
+    "folders_pending": 1
+  },
+  "promotion": {
+    "schema_version": 2,
+    "mode": "full",
+    "preserved_state_sha256": "077b7e32f1c3c7bb6ce73627e5a27efd147767efdeb54b5329bd5206f00d2181",
+    "already_promoted": false
+  },
+  "backup_readable_and_v1_validated": true
+}

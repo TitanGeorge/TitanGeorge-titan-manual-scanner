@@ -12,7 +12,378 @@ test_crash_after_rename_recovery (test_downloader.Tests.test_crash_after_rename_
 test_current_nonce_not_literal (test_downloader.Tests.test_current_nonce_not_literal) ... ok
 test_duplicate_refs_separate_folders (test_downloader.Tests.test_duplicate_refs_separate_folders) ... ok
 test_expected_size_mismatch (test_downloader.Tests.test_expected_size_mismatch) ... ok
-test_failures_do_not_consume_success_budget (test_downloader.Tests.test_failures_do_not_consume_success_budget) ... ok
+test_failures_do_not_consume_success_budget (test_downloader.Tests.test_failures_do_not_consume_success_budget) ... {
+  "discovered": 15,
+  "pending": 13,
+  "downloading": 0,
+  "verified": 2,
+  "needs_review": 0,
+  "failed": 0,
+  "needing_retry": 0,
+  "duplicate_references": 0,
+  "verified_bytes": 862,
+  "known_remaining_bytes": 5603,
+  "missing_sizes": 0,
+  "last_success": "2026-10-01T00:49:11.888804+00:00",
+  "folder_progress": {
+    "source_path": "APPLIANCE/Maker",
+    "page": 1,
+    "status": "pending"
+  },
+  "failed_folders": 0,
+  "available_disk_bytes": 31790694400,
+  "success_budget_used": 2,
+  "hard_limit": 10,
+  "limit_reached": false,
+  "schema_version": 1,
+  "mode": "test",
+  "crawling_active": true,
+  "paused": false,
+  "folders_discovered": 1,
+  "folders_completed": 0,
+  "folders_pending": 1
+}
+{
+  "discovered": 15,
+  "pending": 11,
+  "downloading": 0,
+  "verified": 4,
+  "needs_review": 0,
+  "failed": 0,
+  "needing_retry": 0,
+  "duplicate_references": 0,
+  "verified_bytes": 1724,
+  "known_remaining_bytes": 4741,
+  "missing_sizes": 0,
+  "last_success": "2026-10-01T00:49:11.891883+00:00",
+  "folder_progress": {
+    "source_path": "APPLIANCE/Maker",
+    "page": 1,
+    "status": "pending"
+  },
+  "failed_folders": 0,
+  "available_disk_bytes": 31790608384,
+  "success_budget_used": 4,
+  "hard_limit": 10,
+  "limit_reached": false,
+  "schema_version": 1,
+  "mode": "test",
+  "crawling_active": true,
+  "paused": false,
+  "folders_discovered": 1,
+  "folders_completed": 0,
+  "folders_pending": 1
+}
+{
+  "discovered": 15,
+  "pending": 9,
+  "downloading": 0,
+  "verified": 6,
+  "needs_review": 0,
+  "failed": 0,
+  "needing_retry": 0,
+  "duplicate_references": 0,
+  "verified_bytes": 2586,
+  "known_remaining_bytes": 3879,
+  "missing_sizes": 0,
+  "last_success": "2026-10-01T00:49:11.896231+00:00",
+  "folder_progress": {
+    "source_path": "APPLIANCE/Maker",
+    "page": 1,
+    "status": "pending"
+  },
+  "failed_folders": 0,
+  "available_disk_bytes": 31790522368,
+  "success_budget_used": 6,
+  "hard_limit": 10,
+  "limit_reached": false,
+  "schema_version": 1,
+  "mode": "test",
+  "crawling_active": true,
+  "paused": false,
+  "folders_discovered": 1,
+  "folders_completed": 0,
+  "folders_pending": 1
+}
+{
+  "discovered": 15,
+  "pending": 7,
+  "downloading": 0,
+  "verified": 8,
+  "needs_review": 0,
+  "failed": 0,
+  "needing_retry": 0,
+  "duplicate_references": 0,
+  "verified_bytes": 3448,
+  "known_remaining_bytes": 3017,
+  "missing_sizes": 0,
+  "last_success": "2026-10-01T00:49:11.899060+00:00",
+  "folder_progress": {
+    "source_path": "APPLIANCE/Maker",
+    "page": 1,
+    "status": "pending"
+  },
+  "failed_folders": 0,
+  "available_disk_bytes": 31790440448,
+  "success_budget_used": 8,
+  "hard_limit": 10,
+  "limit_reached": false,
+  "schema_version": 1,
+  "mode": "test",
+  "crawling_active": true,
+  "paused": false,
+  "folders_discovered": 1,
+  "folders_completed": 0,
+  "folders_pending": 1
+}
+{
+  "discovered": 15,
+  "pending": 5,
+  "downloading": 0,
+  "verified": 10,
+  "needs_review": 0,
+  "failed": 0,
+  "needing_retry": 0,
+  "duplicate_references": 0,
+  "verified_bytes": 4310,
+  "known_remaining_bytes": 2155,
+  "missing_sizes": 0,
+  "last_success": "2026-10-01T00:49:11.901813+00:00",
+  "folder_progress": {
+    "source_path": "APPLIANCE/Maker",
+    "page": 1,
+    "status": "pending"
+  },
+  "failed_folders": 0,
+  "available_disk_bytes": 31790358528,
+  "success_budget_used": 10,
+  "hard_limit": 10,
+  "limit_reached": true,
+  "schema_version": 1,
+  "mode": "test",
+  "crawling_active": true,
+  "paused": false,
+  "folders_discovered": 1,
+  "folders_completed": 0,
+  "folders_pending": 1
+}
+{
+  "discovered": 12,
+  "pending": 11,
+  "downloading": 0,
+  "verified": 0,
+  "needs_review": 0,
+  "failed": 1,
+  "needing_retry": 1,
+  "duplicate_references": 0,
+  "verified_bytes": 0,
+  "known_remaining_bytes": 5172,
+  "missing_sizes": 0,
+  "last_success": null,
+  "folder_progress": {
+    "source_path": "APPLIANCE/Maker",
+    "page": 1,
+    "status": "pending"
+  },
+  "failed_folders": 0,
+  "available_disk_bytes": 31790833664,
+  "success_budget_used": 0,
+  "hard_limit": 10,
+  "limit_reached": false,
+  "schema_version": 1,
+  "mode": "test",
+  "crawling_active": true,
+  "paused": false,
+  "folders_discovered": 1,
+  "folders_completed": 0,
+  "folders_pending": 1
+}
+{
+  "discovered": 12,
+  "pending": 10,
+  "downloading": 0,
+  "verified": 0,
+  "needs_review": 0,
+  "failed": 2,
+  "needing_retry": 2,
+  "duplicate_references": 0,
+  "verified_bytes": 0,
+  "known_remaining_bytes": 5172,
+  "missing_sizes": 0,
+  "last_success": null,
+  "folder_progress": {
+    "source_path": "APPLIANCE/Maker",
+    "page": 1,
+    "status": "pending"
+  },
+  "failed_folders": 0,
+  "available_disk_bytes": 31790792704,
+  "success_budget_used": 0,
+  "hard_limit": 10,
+  "limit_reached": false,
+  "schema_version": 1,
+  "mode": "test",
+  "crawling_active": true,
+  "paused": false,
+  "folders_discovered": 1,
+  "folders_completed": 0,
+  "folders_pending": 1
+}
+{
+  "discovered": 12,
+  "pending": 9,
+  "downloading": 0,
+  "verified": 1,
+  "needs_review": 0,
+  "failed": 2,
+  "needing_retry": 2,
+  "duplicate_references": 0,
+  "verified_bytes": 431,
+  "known_remaining_bytes": 4741,
+  "missing_sizes": 0,
+  "last_success": "2026-10-01T00:49:11.919184+00:00",
+  "folder_progress": {
+    "source_path": "APPLIANCE/Maker",
+    "page": 1,
+    "status": "pending"
+  },
+  "failed_folders": 0,
+  "available_disk_bytes": 31790739456,
+  "success_budget_used": 1,
+  "hard_limit": 10,
+  "limit_reached": false,
+  "schema_version": 1,
+  "mode": "test",
+  "crawling_active": true,
+  "paused": false,
+  "folders_discovered": 1,
+  "folders_completed": 0,
+  "folders_pending": 1
+}
+{
+  "discovered": 12,
+  "pending": 8,
+  "downloading": 0,
+  "verified": 2,
+  "needs_review": 0,
+  "failed": 2,
+  "needing_retry": 2,
+  "duplicate_references": 0,
+  "verified_bytes": 862,
+  "known_remaining_bytes": 4310,
+  "missing_sizes": 0,
+  "last_success": "2026-10-01T00:49:11.920453+00:00",
+  "folder_progress": {
+    "source_path": "APPLIANCE/Maker",
+    "page": 1,
+    "status": "pending"
+  },
+  "failed_folders": 0,
+  "available_disk_bytes": 31790698496,
+  "success_budget_used": 2,
+  "hard_limit": 10,
+  "limit_reached": false,
+  "schema_version": 1,
+  "mode": "test",
+  "crawling_active": true,
+  "paused": false,
+  "folders_discovered": 1,
+  "folders_completed": 0,
+  "folders_pending": 1
+}
+{
+  "discovered": 12,
+  "pending": 7,
+  "downloading": 0,
+  "verified": 3,
+  "needs_review": 0,
+  "failed": 2,
+  "needing_retry": 2,
+  "duplicate_references": 0,
+  "verified_bytes": 1293,
+  "known_remaining_bytes": 3879,
+  "missing_sizes": 0,
+  "last_success": "2026-10-01T00:49:11.921571+00:00",
+  "folder_progress": {
+    "source_path": "APPLIANCE/Maker",
+    "page": 1,
+    "status": "pending"
+  },
+  "failed_folders": 0,
+  "available_disk_bytes": 31790657536,
+  "success_budget_used": 3,
+  "hard_limit": 10,
+  "limit_reached": false,
+  "schema_version": 1,
+  "mode": "test",
+  "crawling_active": true,
+  "paused": false,
+  "folders_discovered": 1,
+  "folders_completed": 0,
+  "folders_pending": 1
+}
+{
+  "discovered": 12,
+  "pending": 6,
+  "downloading": 0,
+  "verified": 4,
+  "needs_review": 0,
+  "failed": 2,
+  "needing_retry": 2,
+  "duplicate_references": 0,
+  "verified_bytes": 1724,
+  "known_remaining_bytes": 3448,
+  "missing_sizes": 0,
+  "last_success": "2026-10-01T00:49:11.922714+00:00",
+  "folder_progress": {
+    "source_path": "APPLIANCE/Maker",
+    "page": 1,
+    "status": "pending"
+  },
+  "failed_folders": 0,
+  "available_disk_bytes": 31790616576,
+  "success_budget_used": 4,
+  "hard_limit": 10,
+  "limit_reached": false,
+  "schema_version": 1,
+  "mode": "test",
+  "crawling_active": true,
+  "paused": false,
+  "folders_discovered": 1,
+  "folders_completed": 0,
+  "folders_pending": 1
+}
+{
+  "discovered": 12,
+  "pending": 5,
+  "downloading": 0,
+  "verified": 5,
+  "needs_review": 0,
+  "failed": 2,
+  "needing_retry": 2,
+  "duplicate_references": 0,
+  "verified_bytes": 2155,
+  "known_remaining_bytes": 3017,
+  "missing_sizes": 0,
+  "last_success": "2026-10-01T00:49:11.923825+00:00",
+  "folder_progress": {
+    "source_path": "APPLIANCE/Maker",
+    "page": 1,
+    "status": "pending"
+  },
+  "failed_folders": 0,
+  "available_disk_bytes": 31790575616,
+  "success_budget_used": 5,
+  "hard_limit": 10,
+  "limit_reached": false,
+  "schema_version": 1,
+  "mode": "test",
+  "crawling_active": true,
+  "paused": false,
+  "folders_discovered": 1,
+  "folders_completed": 0,
+  "folders_pending": 1
+}ok
 test_filename_case_collisions_and_original (test_downloader.Tests.test_filename_case_collisions_and_original) ... ok
 test_filename_same_name_and_long (test_downloader.Tests.test_filename_same_name_and_long) ... ok
 test_full_folder_nested_encoding (test_downloader.Tests.test_full_folder_nested_encoding) ... ok
@@ -47,6 +418,33 @@ test_unicode_windows_length (test_downloader.Tests.test_unicode_windows_length) 
 test_unrelated_final_during_recovery_not_adopted (test_downloader.Tests.test_unrelated_final_during_recovery_not_adopted) ... ok
 test_verified_staged_part_recovery (test_downloader.Tests.test_verified_staged_part_recovery) ... ok
 test_zero_body (test_downloader.Tests.test_zero_body) ... ok
+test_ctrl_c_sets_stop_and_restart_recovers_reservation (test_promotion.FullOperationTests.test_ctrl_c_sets_stop_and_restart_recovers_reservation) ... ok
+test_full_429_5xx_retries_remain_bounded (test_promotion.FullOperationTests.test_full_429_5xx_retries_remain_bounded) ... ok
+test_full_auth_expiration_stops_scheduling_and_resumes (test_promotion.FullOperationTests.test_full_auth_expiration_stops_scheduling_and_resumes) ... ok
+test_full_concurrency_two_keeps_completed_files (test_promotion.FullOperationTests.test_full_concurrency_two_keeps_completed_files) ... ok
+test_full_disk_stop_before_any_request (test_promotion.FullOperationTests.test_full_disk_stop_before_any_request) ... ok
+test_full_resume_uses_saved_page_not_completed_page (test_promotion.FullOperationTests.test_full_resume_uses_saved_page_not_completed_page) ... ok
+test_full_run_over_ten_and_resume_no_redownload (test_promotion.FullOperationTests.test_full_run_over_ten_and_resume_no_redownload) ... ok
+test_missing_verified_files_need_review_no_redownload (test_promotion.FullOperationTests.test_missing_verified_files_need_review_no_redownload) ... ok
+test_backup_failure_original_unchanged (test_promotion.PromotionTests.test_backup_failure_original_unchanged) ... ok
+test_backup_readable_and_v1_usable (test_promotion.PromotionTests.test_backup_readable_and_v1_usable) ... ok
+test_backup_verification_failure_original_unchanged (test_promotion.PromotionTests.test_backup_verification_failure_original_unchanged) ... ok
+test_backup_write_failure_leaves_v1 (test_promotion.PromotionTests.test_backup_write_failure_leaves_v1) ... ok
+test_exact_live_counts_and_all_values_preserved (test_promotion.PromotionTests.test_exact_live_counts_and_all_values_preserved) ... ok
+test_full_cli_requires_migration_before_auth (test_promotion.PromotionTests.test_full_cli_requires_migration_before_auth) ... ok
+test_interruption_after_commit_then_idempotence (test_promotion.PromotionTests.test_interruption_after_commit_then_idempotence) ... ok
+test_large_manifest_streaming (test_promotion.PromotionTests.test_large_manifest_streaming) ... ok
+test_limit_removed_success_protection_retained (test_promotion.PromotionTests.test_limit_removed_success_protection_retained) ... ok
+test_metadata_change_fails_without_replacing_verified_record (test_promotion.PromotionTests.test_metadata_change_fails_without_replacing_verified_record) ... ok
+test_migration_postvalidation_failure_rolls_back (test_promotion.PromotionTests.test_migration_postvalidation_failure_rolls_back) ... ok
+test_offline_commands_and_old_launcher_do_not_contact_source (test_promotion.PromotionTests.test_offline_commands_and_old_launcher_do_not_contact_source) ... ok
+test_process_killed_before_and_after_commit (test_promotion.PromotionTests.test_process_killed_before_and_after_commit) ... ok
+test_process_killed_during_transaction (test_promotion.PromotionTests.test_process_killed_during_transaction) ... ok
+test_restore_before_network_preserves_every_value (test_promotion.PromotionTests.test_restore_before_network_preserves_every_value) ... ok
+test_restore_rejects_loss_of_new_discovery (test_promotion.PromotionTests.test_restore_rejects_loss_of_new_discovery) ... ok
+test_transaction_rollback_all_fault_boundaries (test_promotion.PromotionTests.test_transaction_rollback_all_fault_boundaries) ... ok
+test_unknown_schema_and_invalid_success_stop (test_promotion.PromotionTests.test_unknown_schema_and_invalid_success_stop) ... ok
+test_wal_uncheckpointed_state_backed_up (test_promotion.PromotionTests.test_wal_uncheckpointed_state_backed_up) ... ok
 test_blocked_redirect_before_request (test_service.ServiceTests.test_blocked_redirect_before_request) ... ok
 test_deleted_verified_does_not_reset_cap (test_service.ServiceTests.test_deleted_verified_does_not_reset_cap) ... ok
 test_disguised_login_never_quarantined (test_service.ServiceTests.test_disguised_login_never_quarantined) ... ok
@@ -62,6 +460,162 @@ test_network_errors_sanitized (test_service.ServiceTests.test_network_errors_san
 test_stream_interruption_sanitized (test_service.ServiceTests.test_stream_interruption_sanitized) ... ok
 
 ----------------------------------------------------------------------
-Ran 62 tests in 0.117s
+Ran 89 tests in 0.727s
 
 OK
+
+{
+  "discovered": 12,
+  "pending": 4,
+  "downloading": 0,
+  "verified": 6,
+  "needs_review": 0,
+  "failed": 2,
+  "needing_retry": 2,
+  "duplicate_references": 0,
+  "verified_bytes": 2586,
+  "known_remaining_bytes": 2586,
+  "missing_sizes": 0,
+  "last_success": "2026-10-01T00:49:11.924959+00:00",
+  "folder_progress": {
+    "source_path": "APPLIANCE/Maker",
+    "page": 1,
+    "status": "pending"
+  },
+  "failed_folders": 0,
+  "available_disk_bytes": 31790522368,
+  "success_budget_used": 6,
+  "hard_limit": 10,
+  "limit_reached": false,
+  "schema_version": 1,
+  "mode": "test",
+  "crawling_active": true,
+  "paused": false,
+  "folders_discovered": 1,
+  "folders_completed": 0,
+  "folders_pending": 1
+}
+{
+  "discovered": 12,
+  "pending": 3,
+  "downloading": 0,
+  "verified": 7,
+  "needs_review": 0,
+  "failed": 2,
+  "needing_retry": 2,
+  "duplicate_references": 0,
+  "verified_bytes": 3017,
+  "known_remaining_bytes": 2155,
+  "missing_sizes": 0,
+  "last_success": "2026-10-01T00:49:11.926078+00:00",
+  "folder_progress": {
+    "source_path": "APPLIANCE/Maker",
+    "page": 1,
+    "status": "pending"
+  },
+  "failed_folders": 0,
+  "available_disk_bytes": 31790481408,
+  "success_budget_used": 7,
+  "hard_limit": 10,
+  "limit_reached": false,
+  "schema_version": 1,
+  "mode": "test",
+  "crawling_active": true,
+  "paused": false,
+  "folders_discovered": 1,
+  "folders_completed": 0,
+  "folders_pending": 1
+}
+{
+  "discovered": 12,
+  "pending": 2,
+  "downloading": 0,
+  "verified": 8,
+  "needs_review": 0,
+  "failed": 2,
+  "needing_retry": 2,
+  "duplicate_references": 0,
+  "verified_bytes": 3448,
+  "known_remaining_bytes": 1724,
+  "missing_sizes": 0,
+  "last_success": "2026-10-01T00:49:11.927268+00:00",
+  "folder_progress": {
+    "source_path": "APPLIANCE/Maker",
+    "page": 1,
+    "status": "pending"
+  },
+  "failed_folders": 0,
+  "available_disk_bytes": 31790440448,
+  "success_budget_used": 8,
+  "hard_limit": 10,
+  "limit_reached": false,
+  "schema_version": 1,
+  "mode": "test",
+  "crawling_active": true,
+  "paused": false,
+  "folders_discovered": 1,
+  "folders_completed": 0,
+  "folders_pending": 1
+}
+{
+  "discovered": 12,
+  "pending": 1,
+  "downloading": 0,
+  "verified": 9,
+  "needs_review": 0,
+  "failed": 2,
+  "needing_retry": 2,
+  "duplicate_references": 0,
+  "verified_bytes": 3879,
+  "known_remaining_bytes": 1293,
+  "missing_sizes": 0,
+  "last_success": "2026-10-01T00:49:11.928532+00:00",
+  "folder_progress": {
+    "source_path": "APPLIANCE/Maker",
+    "page": 1,
+    "status": "pending"
+  },
+  "failed_folders": 0,
+  "available_disk_bytes": 31790399488,
+  "success_budget_used": 9,
+  "hard_limit": 10,
+  "limit_reached": false,
+  "schema_version": 1,
+  "mode": "test",
+  "crawling_active": true,
+  "paused": false,
+  "folders_discovered": 1,
+  "folders_completed": 0,
+  "folders_pending": 1
+}
+{
+  "discovered": 12,
+  "pending": 0,
+  "downloading": 0,
+  "verified": 10,
+  "needs_review": 0,
+  "failed": 2,
+  "needing_retry": 2,
+  "duplicate_references": 0,
+  "verified_bytes": 4310,
+  "known_remaining_bytes": 862,
+  "missing_sizes": 0,
+  "last_success": "2026-10-01T00:49:11.929631+00:00",
+  "folder_progress": {
+    "source_path": "APPLIANCE/Maker",
+    "page": 1,
+    "status": "pending"
+  },
+  "failed_folders": 0,
+  "available_disk_bytes": 31790358528,
+  "success_budget_used": 10,
+  "hard_limit": 10,
+  "limit_reached": true,
+  "schema_version": 1,
+  "mode": "test",
+  "crawling_active": true,
+  "paused": false,
+  "folders_discovered": 1,
+  "folders_completed": 0,
+  "folders_pending": 1
+}
